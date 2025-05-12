@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Building a TicTacToe competitor</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+.auto-style2 {
+	text-align: left;
+}
+.auto-style3 {
+	text-decoration: underline;
+}
+</style>
+</head>
+
+<body>
+
+<h3 class="auto-style1">Building a TicTacToe competitor</h3>
+<p class="auto-style2">The next job is to create a tictactoe competition program 
+that fits into the framework that allows someone to play the competitor using a 
+browser.&nbsp; I have developed this framework (consisting of 3 Python3 programs 
+and one webpage) that you'll need, and you can add your program to the framework 
+to run TicTacToe through your browser.</p>
+<p class="auto-style2">The following show the requirements for your program to 
+fit into the framework.&nbsp; Any program not fullfilling these requirements 
+will fail to run properly and will be punished.&nbsp; As an example, let's say 
+you have the program <em>fred.py</em> which is your competitor program.</p>
+<ol>
+	<li>
+	<p class="auto-style2">The progam will be called by the <em>python</em> 
+	program on the command-line, as in:<br />
+	<em>$ python fred.py .... {command-line arguments}...<br />
+	</em>so make sure that your preferred python interpreter is called <em>
+	python</em> (and you don't have to call <em>python3</em> if you need that 
+	version of python)<br />
+	</p>
+	</li>
+	<li>
+	<p class="auto-style2"><em>fred.py</em> will be called with a number of 
+	command-line arguments, some of which it may ignore.&nbsp; These arguments 
+	may be given <span class="auto-style3">in any order.</span>&nbsp; Here they 
+	are:</p>
+	<ol>
+		<li>
+		<p class="auto-style2">result_prefix={<em>some-string</em>}&nbsp;&nbsp;&nbsp; 
+		This argument will be given.&nbsp; <em>fred's</em> first line of output, 
+		whether to a file or to stdout, must be the string given by 
+		result_prefix followed by '\n'.&nbsp; For instance, if the argument is
+		<em>result_prefix=Fleep</em> then the first line of output must be <em>
+		Fleep</em>.</p>
+		</li>
+		<li>
+		<p class="auto-style2">result_file={<em>filename</em>}&nbsp; This 
+		argument is optional.&nbsp; If provided, all output should be to that 
+		file.&nbsp; If not provided, output should be printed.<br />
+		</p>
+		</li>
+		<li>
+		<p class="auto-style2">board={<em>9-char board</em>}&nbsp; This argument 
+		is optional and will be given if the task is to return the best next 
+		move.&nbsp; Either this argument or <em>id=1</em> must be given.&nbsp; 
+		When this argument is provided, the output should look something like 
+		this:<br />
+		<em>Fleep<br />
+		move=2<br />
+		Best move:&nbsp; upper-right.&nbsp; Draw in 4 moves.</em><br />
+		</p>
+		</li>
+		<li>
+		<p class="auto-style2">id=1&nbsp;&nbsp; This argument is optional.&nbsp; 
+		If given, then <em>fred</em> will output the author and title of the 
+		program.&nbsp; When this argument is provided, the output should look 
+		something like this:<br />
+		<em>Fleep<br />
+		author=Beelzebub<br />
+		title=The Best (v. 19.2.b)</em><br />
+		</p>
+		</li>
+		<li>
+		<p class="auto-style2">cutoff_time={<em>seconds</em>}&nbsp;&nbsp; The 
+		maximum amount of time allocated to this program.&nbsp; Feel free to 
+		ignore.&nbsp; This will be enforced by the parent of this program.</p>
+		</li>
+	</ol>
+	</li>
+	<li>
+	<p class="auto-style2">So, the program will either be called to compute the 
+	next best move (when the "board=" argument is given) or to identify itself 
+	(when the "id=" argument is given).</p>
+	</li>
+	<li>
+	<p class="auto-style2">When outputing the best move, also say it in English 
+	with the appropriate future claim: (as in: "Best move: upper-right. Draw in 
+	4 moves").</p>
+	</li>
+	<li>
+	<p class="auto-style2">Typically, you'll be given 4 seconds to compute 
+	(actually, this is elapsed time, not CPU time).&nbsp; Your program should be 
+	able to do this easily, without a sliderule or WolframAlpha.</p>
+	</li>
+	<li>
+	<p class="auto-style2">To show you how the plumbing works, I've included a 
+	brilliant competitor program: TTT-Random.py which will assess its opponent's 
+	personality virtues and credit score, and choose a move accordingly.</p>
+	</li>
+	<li>
+	<p class="auto-style2">Having built a competitor, it's time to try RUNNING 
+	IT (omg).</p>
+	</li>
+</ol>
+
+</body>
+
+</html>

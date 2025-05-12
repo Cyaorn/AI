@@ -1,0 +1,3 @@
+nutleader
+move=4
+Best move: middle-center Draw in 8 moves

@@ -1,0 +1,92 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 12.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Python Web Server Installation</title>
+<style type="text/css">
+.auto-style1 {
+	text-decoration: underline;
+}
+.auto-style2 {
+	margin-left: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<h3 align="center">A Simple Python Web-Server for Windows and Mac/Unix</h3>
+<h3 align="center">Download, Installation and Check </h3>
+<div align="center">
+  <center>
+  <table border="1" width="37%" cellpadding="5">
+    <tr>
+      <td width="50%"><b>Downloading and Installing:</b>&nbsp; 
+        <p>Create a directory somewhere, and call it <i>PythonWebServer.</i>
+        Then download the appropriate Python-based web server from the link
+        below and unzip it into the new <i>PythonWebServer </i>
+        directory.&nbsp;&nbsp;</p>
+	  <p class="auto-style2">The<a href="PythonWebServer-1.1.zip"> Python Web Server</a> (and associated files)</p>
+        <p>When unzipping, be sure to
+        allow the creation of new directories.&nbsp; When done, you should have
+        2 new directories beneath <i>PythonWebServer</i> called <i>html-stuff</i>
+        and <i>cgi-bin</i> with some files already in each of them.&nbsp; If
+        that's not the case, redo the unzipping to fix that.</p>
+	  <p><strong>For Unix/Mac systems</strong>: After unzipping, change the file 
+	  permissions of all Python files that you've unzipped to allow execute 
+	  permission.&nbsp; Also the <em>webserver.bat </em>&nbsp;file. You'll find Python files 
+	  and <em>webserver.bat </em>in the <em>PythonWebServer</em> 
+	  and <em>PythonWebServer</em>/<em>cgi-bin</em> directories.</p>
+        <p><b>In the future:</b> <br>-- <span class="auto-style1">HTML files</span>: put your .html files (those that do not involve
+        any Python programs) into the <i>html-stuff</i>  directory <br>--
+		<span class="auto-style1">Python programs:</span> put the Python programs that the web server should execute into
+        the <i>cgi-bin </i>directory.&nbsp; <br>&nbsp;&nbsp;&nbsp; a) However, if there are data files
+        that your Python program opens, put them into the main directory (the
+        one that the <i>PythonWebServer.py</i> file is in), but don't use add
+        any &quot;path&quot; to the filename when using the &quot;open(filename,'r')&quot;
+        command even though the data file is in a different directory than the
+        program file.<br>&nbsp;&nbsp;&nbsp; OR...<br>&nbsp;&nbsp; b) You can put 
+		data files into the same directory (<em>cgi-bin)</em> as your Python 
+		programs, provided that your program changes its directory (using 
+		os.chdir()) to the <em>cgi-bin</em> directory.&nbsp; The programs I give 
+		you will automatically do that.</td>
+    </tr>
+    <tr>
+      <td width="50%"><b>Running the Web Server:</b>&nbsp; 
+        <p><span class="auto-style1">On Windows</span>: Find the <i>PythonWebServer
+        </i>directory (using a file manager), and double-click on the file: <em>
+		webserver.bat</em>.&nbsp;
+        A black window should come up, with the words: &quot;Serving HTTP on 
+		0.0.0.0 port 9000&quot;&nbsp; If that doesn't happen, then for some 
+		reason,&nbsp;Windows can't execute your python programs automatically.&nbsp; 
+		Try to fix that, if you can.<br>OR...<br>Get into a CMD window, navigate 
+		to the <em>PythonWebServer</em> directory and execute the file: <em>
+		webserver.bat</em>.<p>
+	  <span class="auto-style1">On Unix/Mac</span>: Open a terminal window and 
+	  navigate to the PythonWebServer directory and execute <em>webserver.bat.&nbsp;
+	  </em>If you're running the <em>bash</em> shell, then <em>bash 
+	  webserver.bat</em>.</td>
+    </tr>
+    <tr>
+      <td width="50%"><b>Check if the server is running: </b>
+        <p>In your browser (e.g. Firefox, Chrome, Safari, etc), go to the following web
+        page: &quot;<a href="http://localhost:9000">http://localhost:9000</a>&quot;.&nbsp;
+        You should see a web page that will step you through some tests.&nbsp;
+        If you don't, then there's trouble in webserverland.</td>
+    </tr>
+    <tr>
+      <td width="50%"><b>Shutdown the Web Server</b>:<p>In the black window where you started the web server, there should be
+        a record of all of the pages it served.&nbsp; Press Ctrl-C (^C).&nbsp; 
+	  Possibly more than once. That should shut down the server.<br>
+        </td>
+    </tr>
+  </table>
+  </center>
+</div>
+
+</body>
+
+</html>

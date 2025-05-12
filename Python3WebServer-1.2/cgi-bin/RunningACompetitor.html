@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Running and Debugging your TicTa</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+.auto-style2 {
+	text-align: left;
+}
+.auto-style3 {
+	color: #FF0000;
+}
+</style>
+</head>
+
+<body>
+
+<h3 class="auto-style1">Running and Debugging your TicTacToe competitor</h3>
+<ol>
+	<li>
+	<p class="auto-style2">Unzip the contents of the <em>ttt.zip</em> file into 
+	the <em>cgi-bin</em> directory associated with our PythonWebserver.<br />
+	</p>
+	</li>
+	<li>
+	<p class="auto-style2">Also copy your competitor python file into the same
+	<em>cgi-bin</em> directory. For the examples below, we'll be testing the <em>
+	TTT-Random.py</em> competitor, which was developed in python3, so <em>
+	python3</em> will be the interpreter.&nbsp; In the place of <em>
+	TTT-Random.py</em>, you should be testing your own competitor program in the 
+	same way as below, and getting results formatted in exactly the same way.<br />
+	</p>
+	</li>
+	<li>
+	<p class="auto-style2">Let's test the program with a variety of appropriate 
+	command-line arguments:</p>
+	<ol>
+		<li>
+		<p class="auto-style2"><em>python3&nbsp; TTT-Random.py&nbsp; 
+		result_prefix=fred id=1</em><br />
+		(this will print: )<br />
+		<em>fred<br />
+		author=P. Brooks<br />
+		title=Random Mover</em></p>
+		</li>
+		<li>
+		<p class="auto-style2"><em>python3 TTT-Random.py result_prefix=fred id=1 
+		result_file=george.txt</em><br />
+		(this will create the george.txt file with the same contents as above)</p>
+		</li>
+		<li>
+		<p class="auto-style2"><em>python3 TTT-Random.py result_prefix=harry 
+		result_file=george.txt board=__x______</em><br />
+		(this will create or overwrite george.txt with some random move 
+		formatted as below).&nbsp; However, instead of the silly commentary 
+		("(pretty random, though)") , <strong>you should provide the Best move 
+		also in English and a projection for the rest of the game, as in "Best 
+		move: upper-left. Draw in 4 moves"</strong> :<br />
+		<em>harry<br />
+		move=0<br />
+		(pretty random, though)</em></p>
+		</li>
+	</ol>
+	</li>
+	<li>
+	<p class="auto-style2">Now we have to test it with the <em>TimeDriver-py3.py</em> 
+	program, which will be the parent program running your competitor:<br />
+	</p>
+	<ol>
+		<li>
+		<p>Copy your program into the <em>cgi-bin</em> directory containing the
+		<em>TimeDriver-py3.py</em> program (<em>TTT-Random.py</em> should be 
+		there already).&nbsp; Then run the test below, substituting your program 
+		filename for <em>TTT-Random.py</em>.</p>
+		</li>
+		<li>
+		<p class="auto-style2"><em>python3 TimeDriver-py3.py&nbsp; 
+		progfile=TTT-Random.py&nbsp; result_file=george.txt&nbsp; 
+		result_prefix=what cutoff_time=4 board=__x______</em><br />
+		(this will actually print something like)<br />
+		<em>what<br />
+		move=6<br />
+		(pretty random, though)</em></p>
+		</li>
+	</ol>
+	</li>
+	<li>
+	<p class="auto-style2">All right.&nbsp; It's showtime.&nbsp; Let's try your 
+	program in its intended habitat...<br />
+	</p>
+	<ol>
+		<li>
+		<p class="auto-style2">Copy your program file into the <em>cgi-bin</em> 
+		subdirectory of the PythonWebServer (if not there already).</p>
+		</li>
+		<li>
+		<p class="auto-style2">Bring up the PythonWebServer.</p>
+		</li>
+		<li>
+		<p class="auto-style2">(<span class="auto-style3"><strong>correction 
+		from previous version</strong></span>): In your browser, go to the URL:&nbsp; <em>
+		localhost:9000/cgi-bin/startup.py</em></p>
+		</li>
+		<li>
+		<p class="auto-style2">It will allow you to enter the name of your 
+		competitor program file (just the filename, no path is required)...</p>
+		</li>
+		<li>
+		<p class="auto-style2">...and, hopefully, things will work... (though 
+		this rarely happens).</p>
+		</li>
+		<li>
+		<p class="auto-style2">The first test is to press the <em>Check Program</em> 
+		button and see if you get your name and program title.&nbsp; If so, 
+		happy sailing....</p>
+		</li>
+	</ol>
+	</li>
+</ol>
+ 
+</body>
+
+</html>

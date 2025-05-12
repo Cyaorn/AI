@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- Version: 12/20/18: preventing moving after draw.
+-->
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Tic-Tac-Toe</title>
+<style type="text/css">
+.auto-style2 {
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	font-size: large;
+}
+.auto-style3 {
+	font-size: medium;
+}
+.auto-style4 {
+	text-align: center;
+}
+.auto-style5 {
+	font-size: small;
+}
+.auto-style6 {
+	border-style: solid;
+	border-width: 3px;
+	border-color:lime
+}
+.board_cell {
+ border-style: solid;
+ border-width: 1px;
+ border-color: blue;
+ width: 75px;
+ height: 75px;
+ font-family: Verdana, Geneva, Tahoma, sans-serif;
+ font-size:xx-large
+ 
+	}
+}
+
+.auto-style7 {
+	font-size:small;
+	}
+	
+.computer-style {
+	font-family:Verdana, Geneva, Tahoma, sans-serif;
+	font-size:small;
+	
+}
+
+
+.auto-style8 {
+	border-style: solid;
+	border-width: 1px;
+}
+.auto-style9 {
+	font-size: small;
+	text-align: left;
+}
+
+body {
+	background-color: rgb(230,250,255);
+}
+
+
+
+</style>
+
+<script language="javascript">
+var board = "_________";
+
+var turn = whoseTurn(board);
+var moves = [];
+var nextmove = 0;
+var result_prefix = 'ANSWER:';
+var waiting_for = 'move';  // either 'id' or 'move'
+var incoming = '';
+
+
+// ----------------------------------- initialize -------------------------
+function initialize() {
+	//alert("initialize");
+	displayBoard(board);
+}
+
+// ---------------------------------- strCount ---------------------------
+function strCount(s,c) {
+	// counts the number of times character c is in string s
+	var tot = 0;
+	for (var i = 0; i < s.length; ++i) {
+		if (s.charAt(i) == c) tot++;
+	}
+	return tot;
+}
+
+// --------------------------- whoseTurn ------------------------------
+function whoseTurn(b) {
+	var result = 'x';
+	if (strCount(b,'x') != strCount(b,'o')) result = 'o';
+	return result;
+}
+	
+// ------------------------------- fillCell -------------------------
+function fillCell(position,letter,isButton) {
+	// fill the requested cell with a letter or play-button
+	var id = "cell-"+position;
+	var cell = document.getElementById(id);
+	var s = "nothing";
+	if (isButton) {
+		var func = "playOneMove("+position+",'"+letter+"');";
+		s = '<center><input type="button" name="button" value="play '+letter.toUpperCase()+'" onClick="'+func+'"></center>';
+	}
+	else {
+		s = "<center>"+letter.toUpperCase()+"</center>";
+		cell.style = 'color:black';
+	}
+	cell.innerHTML = s;
+}
+
+// ------------------------------- displayBoard------------------------------
+function displayBoard(b) {
+	// fill all cells with letter-moves or buttons according to the given board
+	var player_letter = whoseTurn(b);
+	for (var i = 0; i < b.length; ++i) {
+		letter = b.charAt(i);
+		if ((letter == 'x') || (letter == 'o'))
+			fillCell(i,letter,false);
+		else
+			fillCell(i,player_letter,true);
+	}
+}
+
+// --------------------------------------- isWin ------------------------------
+function isWin(doWinColoring) {
+	// if doWinColoring turn winning cells to red, then return true or false
+	var winSets = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+	var win = [];
+	for (var i = 0; i < winSets.length; ++i) {
+		var awin = winSets[i];
+		if ((board[awin[0]] != '_') && (board[awin[0]] == board[awin[1]]) && (board[awin[1]] == board[awin[2]])) {
+			win = awin;
+			break;
+		}
+		if (win.length != 0) break;
+	}
+	if (doWinColoring && (win.length > 0)) {
+		for (var i = 0; i < win.length; ++i) {
+			var cell = document.getElementById('cell-'+win[i]);
+			cell.style = 'color: #FF0000';
+		}
+	}
+	return (win.length > 0);
+}
+
+// --------------------------------- addMoveToBoardLetters --------------------------
+function addMoveToBoardLetters (aboard,pos) {
+	var letter = whoseTurn(aboard);
+	var new_board = aboard;
+	if (pos == 0)
+		new_board = letter + aboard.slice(1);
+	else if (pos == 8)
+		new_board = aboard.slice(0,8) + letter;
+	else
+		new_board = aboard.slice(0,pos) + letter + aboard.slice(pos+1);
+	return new_board;
+}
+	
+// --------------------------------------- playOneMove ------------------------		
+function playOneMove(pos,letter) {
+	
+	// is already won, ignore move
+	if (isWin(false)) return;
+	
+	var new_board = addMoveToBoardLetters(board,pos);
+	
+	moves[nextmove++] = pos;
+	moves = moves.slice(0,nextmove);  // truncate any moves beyond this one if we have recalled previous moves
+	board = new_board;
+	displayBoard(board);
+	
+	isWin(true);
+}
+
+// ---------------------------------------- playPrevious ----------------------
+function playPrevious() {
+	var new_board = '_________';
+	var pos;
+	if (nextmove == 0) return;
+	
+	nextmove -= 1;
+	for (var i = 0; i < nextmove; ++i) {
+		pos = moves[i];
+		new_board = addMoveToBoardLetters(new_board,pos);
+	}
+	board = new_board;
+	displayBoard(board);
+}
+
+// ---------------------------------- playNext --------------------------------
+function playNext() {
+	if (moves.length > nextmove) {
+		var pos = moves[nextmove];
+		board = addMoveToBoardLetters(board,pos);
+		nextmove += 1;
+		displayBoard(board);
+		isWin(true);
+	}
+}
+	
+// ----------------------------------------- strip -----------------------------
+function strip(s) {
+	// strips off leading and trailing whilespace
+	var start = 0;
+	var end = s.length - 1;
+	if (s.length == 0) return s;
+	for (start = 0; start < s.length; start++)
+		if ((s.charAt(start) != ' ') &&  (s.charAt(start) != '\t')) break;
+	if (start == s.length) return '';
+	for (end = s.length - 1; end > start; --end)
+		if ((s.charAt(end) != ' ') && (s.charAt(end) != '\t')) break;
+	if (start >= end) return '';
+	return s.slice(start,end+1);
+}
+	
+// ------------------------------------- checkProgram --------------------------
+function checkURL() {
+	var url = document.getElementById("url").value;
+	var progfile = document.getElementById("progfile").value;
+	url = strip(url);
+	progfile = strip(progfile);
+	
+	if ((url.length == 0) || (url.slice(0,7) != "http://")) {
+		alert('ERROR: TimeDriver URL should begin with "http://"');
+		return false;
+	}
+	if (progfile.length == 0) {
+		alert('ERROR: TTT Program filename is missing');
+		return false;
+	}
+	if (progfile.slice(-3) != '.py') {
+		alert('ERROR: TTT Program filename should end in ".py"');
+		return false;
+	}
+	if (((url.slice(-1) == '/') && (url.slice(-4) != ".py/")) || ((url.slice(-1) != '/') && (url.slice(-3) != ".py"))) {
+		alert('ERROR: URL should end with ".py" or ".py/"');
+		return false;
+	}
+	
+	return true;
+}
+
+// ------------------------------------------ checkProgram --------------------------------------
+function checkProgram() {
+	waiting_for = 'id';
+	formatRequestAndSend('cutoff_time=4&id=nothing');
+}
+
+function askForMove() {
+	waiting_for = 'move';
+	formatRequestAndSend('cutoff_time=4&board='+board);
+}
+
+// -------------------------------------------formatRequestAndSend -----------------------------
+function formatRequestAndSend(additionalArgs) {
+	if (!checkURL()) return;
+	var url = strip(document.getElementById("url").value);
+	var progfile = strip(document.getElementById("progfile").value);
+	
+	var full = url;
+	if (url[-1] != '/') full += '/';
+	full += '?progfile='+progfile+'&result_prefix='+result_prefix;
+	if (additionalArgs != '') full += '&'+additionalArgs;
+	document.getElementById("processing").innerHTML = "Processing";
+	startRequest(full);
+}
+
+// ----------------------------------- processIncoming -------------------------------------
+function processIncoming() {
+	document.getElementById("processing").innerHTML = '';
+	lines = incoming.split('\n');
+	document.getElementById("message").innerHTML = lines.join('<br/>');
+	// check for result_prefix
+	var found = false;
+	for (var i = 0; i < lines.length; ++i) 
+		if (lines[i].slice(0,result_prefix.length) == result_prefix) {
+			found = true;
+			break;
+		}
+	if (!found) return;
+	
+	if (waiting_for == 'id') {
+		var title = findInLines('title=',lines);
+		var author = findInLines('author=',lines);
+		document.getElementById('title').innerHTML = title;
+		document.getElementById('author').innerHTML = author;
+	}
+	else if (waiting_for == 'move') {
+		var smove = findInLines('move=',lines);
+		if (smove.length > 0) {
+			var imove = parseInt(smove);
+			if (imove >= 0 && imove <=8)
+				playOneMove(parseInt(smove),whoseTurn(board));
+		}
+	}
+}
+
+// ----------------------------------- findInLines -----------------------------------
+function findInLines(what,slines) {
+	for (var i = 0; i < slines.length; ++i)
+		if (slines[i].slice(0,what.length) == what)
+			return slines[i].slice(what.length);
+	return '';
+}
+
+// -------------------------------------- newGame -----------------------------------
+function newGame() {
+	board = '_________'
+	moves = [];
+	nextmove = 0;
+	displayBoard(board);
+}
+
+</script>
+<script language=javascript>
+// -------------------------------------------- AJAX -------------------------------------------
+var xlmHttp;
+var isIE;
+
+function createXMLHttpRequest()
+{   if (window.ActiveXObject)
+    {   xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        isIE = true;
+    }
+    else if (window.XMLHttpRequest)
+    {   xmlHttp = new XMLHttpRequest();
+        isIE = false;
+    }
+    else
+	alert('Cannot save comments because xmlHttp will not instantiate.');
+}
+
+function startRequest(url)
+{   createXMLHttpRequest();
+    xmlHttp.onreadystatechange = handleStateChange;
+    xmlHttp.open("GET",url, true);
+    xmlHttp.send(null);
+}
+
+function handleStateChange()
+{   if (xmlHttp.readyState == 4)
+    {	if (xmlHttp.status == 200)
+        {
+            incoming=xmlHttp.responseText;
+            processIncoming();
+ 		}
+    }
+}
+</script>
+
+</head>
+
+<body class="auto-style2" onLoad="initialize();">
+
+<div class="auto-style4">
+	Tic-Tac-Toe Player <span class="auto-style3">&nbsp;<br />
+	</span><span class="auto-style5">(Peter Brooks, Stuyvesant High School, Dec. 
+	2018)</span></div>
+
+<br/>
+<table style="width: 100%;">
+	<tr>
+		<td class="auto-style4" ><center>
+		<table class="auto-style6" style=" background-color:rgb(255,250,250);" >
+			<tr >
+				<td class="board_cell" id="td0"><span id="cell-0">&nbsp;</span></td>
+				<td class="board_cell" id="td1"><span id="cell-1">&nbsp;</span></td>
+				<td class="board_cell" id="td2"><span id="cell-2">&nbsp;</span></td>
+			</tr>
+			<tr>
+				<td class="board_cell" id="td3"><span id="cell-3">&nbsp;</span></td>
+				<td class="board_cell" id="td4"><span id="cell-4">&nbsp;</span></td>
+				<td class="board_cell" id="td5"><span id="cell-5">&nbsp;</span></td>
+			</tr>
+			<tr>
+				<td class="board_cell" id="td6"><span id="cell-6">&nbsp;</span></td>
+				<td class="board_cell" id="td7"><span id="cell-7">&nbsp;</span></td>
+				<td class="board_cell" id="td8"><span id="cell-8">&nbsp;</span></td>
+			</tr>
+		</table>
+		</center>
+		</td>
+		
+	</tr>
+	<tr>
+		<td><center><br/>
+			<input name="Button-comp" type="button" value="Request computer's move" onclick="askForMove();" />
+			</center>
+		&nbsp;</td>
+	</tr>
+	<tr><td><center><label id="processing" style="color:red"></label></center></td></tr>
+	<tr>
+		<td><center>
+		<table class="auto-style8" >
+			<tr>
+				<td class="auto-style7" halign="center" colspan="2" >
+				
+					<center><input name="Button2" type="button" value="&lt;-back" title="Move back one move" onclick="playPrevious();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+					
+						<input name="Button3" type="button" value="next-&gt;" title="Move forward one move" onclick="playNext();"/>&nbsp;&nbsp;&nbsp;&nbsp;
+					
+						<input name="Button4" type="button" value="new game" onClick="newGame();"/></center>
+				</td>
+			</tr>
+			<tr>
+				<td class="auto-style7" halign="left" colspan="2" style="border-color:navy; border-width:1px; border-style:solid" >
+				<input name="Button1" type="button" value="Check program" onclick="checkProgram();"/>
+				&nbsp;       Title:&nbsp;<label id="title" style="color:blue"></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+				Author:&nbsp;<label id="author" style="color:blue"></label>
+				</td>
+			</tr>
+			<tr>
+				<td class="auto-style7" valign="top" >
+				<label class="computer-style">TimeDriver URL:</label>				
+					<input name="Text1" type="text" value="<!--<gamedriver>-->" size="70" id="url"/>
+				</td>
+				<td class="auto-style7" valign="top"><label class="computer-style">TTT Program:</label>
+				
+					<input name="Text2" type="text" value="<!--<progfile>-->" size="40" id="progfile"/>
+				</td>
+			</tr>
+		</center>
+			<tr>
+				<td class="auto-style9" valign="top" colspan="2" >
+				Last message: <br/>
+				
+				<table width="100%" style="border-color:navy; border-width:1px; border-style:solid"><tr><td>
+				<label id="message" style="font-size:small">&nbsp;</label>
+				</td></tr>
+				</table>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+</body>
+
+</html>

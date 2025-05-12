@@ -1,0 +1,1003 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+
+<!-- 
+	Version 0.9 -- 7/16/18 -- P. Brooks -- Stuyvesant High School - pbrooks@stuy.edu
+-->
+<title>Othello</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+.auto-style2 {
+	font-weight: normal;
+	font-size: medium;
+}
+
+.auto-style3 {
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	font-size: large;
+}
+
+body {
+	background-color: rgb(230,250,255);
+}
+
+.auto-style4 {
+	font-size: medium;
+}
+.auto-style7 {
+	font-size: medium;
+}
+
+.auto-style8 {
+	font-size: x-small;
+}
+
+.auto-style9 {
+	font-size: medium;
+	text-align: left;
+}
+
+.auto-style10 {
+	font-size: x-large;
+}
+
+.auto-style11 {
+	font-weight: normal;
+	font-size: x-small;
+}
+
+</style>
+<script language="javascript">
+
+var theCanvas, theContext;
+var FractionOfScreenWidth = .55;
+var BorderWidth = 6;
+var DividerWidth = 2;
+var CellWidth;
+var DiskRadius;
+var cBlack = "#000000";
+var cGreen = "#009933";
+var cWhite = "#FFFFFF";
+var cShade = "#007700";
+
+var Directions = [[0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1]];
+var Cells = [];
+
+var Human = 'x';
+var Computer = 'o';
+var Player = Human;
+var Moves = [];
+var NextMove = 0;
+
+var Processing = false;
+
+var Blank = '-';
+var NewBoard = repeat(Blank,27)+'xo'+repeat(Blank,6)+'ox'+repeat(Blank,27);
+var Board = NewBoard;
+
+var waiting_for = '';
+var result_prefix = 'ANSWER:';
+
+
+// ------------------------------------------ InitCanvas -------------------------------------
+function InitCanvas() {
+	theCanvas = document.getElementById("MainCanvas");
+	theContext = theCanvas.getContext("2d");
+	
+	// Add a touch-listener for touch-screens
+	theCanvas.addEventListener('touchstart',function(event) {
+		if (event.targetTouches.length == 1) {
+			var touch = event.targetTouches[0];
+			MouseDown(touch);
+			//alert('xtouch: '+touch.pageX+'  ytouch: '+touch.pageY);
+		}
+	}, false);
+
+	
+	RecalcDimensions();
+	NewGame('human');
+}
+
+// --------------------------------------- RecalcDimensions --------------------------------
+function RecalcDimensions() {
+	var view_width, view_height, row, col,row_offset, col_offset, top, left;
+	
+	// recalc Canvas width,height:
+	view_width = Math.floor(FractionOfScreenWidth*window.innerWidth);
+	view_height = Math.floor(FractionOfScreenWidth*window.innerHeight);
+	if (view_height < view_width) view_width = view_height;
+	CellWidth = Math.floor((view_width - 2*BorderWidth - 7*DividerWidth)/8);
+	DiskRadius = Math.floor(.45*CellWidth);
+	theCanvas.width = 2*BorderWidth + 7*DividerWidth + 8*CellWidth ;
+	theCanvas.height = theCanvas.width;
+	
+	// calc Cell positions
+	row_offset = theCanvas.height - BorderWidth - CellWidth;
+	col_offset = BorderWidth;
+	for (var irow = 0; irow < 8; ++irow) {
+		top = row_offset - irow * (CellWidth + DividerWidth);
+		for (var icol = 0; icol < 8; ++icol) {
+			left = col_offset + icol * (CellWidth + DividerWidth);
+			Cells[irow*8 + icol] = {left:left, top:top, width:CellWidth};
+		}
+	}
+}
+	
+// ---------------------------------------- RepaintCanvas -----------------------------------
+function RepaintCanvas() {
+	DrawRectangle(0,0,theCanvas.width,theCanvas.height,cBlack);
+	for (var i = 0; i < 64; ++i) {
+		PaintCell(i,cGreen);
+	}
+}
+
+// ------------------------------------------ DrawRectangle ---------------------------------
+function DrawRectangle(left,top,width,height,color) {
+	theContext.fillStyle = color;
+	theContext.fillRect(left,top,width,height);
+}
+
+// ------------------------------------------ PaintCell --------------------------------------
+function PaintCell(pos,color) {
+	var acell = Cells[pos];
+	DrawRectangle(acell.left,acell.top, acell.width, acell.width, color);
+}
+
+// ===================================== Disk coloring =====================================
+// -------------------------------------- PaintDisk ---------------------------------------
+function PaintDisk(pos,insideColor,borderColor) {
+	var top,left;
+	var acell = Cells[pos];
+	
+	left = Math.floor(acell.left + acell.width/2);
+	top = Math.floor(acell.top + acell.width/2);
+	
+	theContext.beginPath()
+	theContext.fillStyle = borderColor;
+	theContext.arc(left,top,DiskRadius,0,2*Math.PI);
+	theContext.closePath();
+	theContext.fill();
+	
+	theContext.beginPath()
+	theContext.fillStyle = insideColor;
+	theContext.arc(left,top,DiskRadius-1,0,2*Math.PI);
+	theContext.closePath();
+	theContext.fill();
+	
+}
+
+// -------------------------------------- PaintLatestMoveDot ---------------------------
+function PaintLatestMoveDot() {
+	var lastest, player, pos;
+	var top,left,acell,color;
+	
+	if (NextMove == 0) return;
+	
+	latest = Moves[NextMove-1];
+	player = latest[0];
+	pos = latest[1];
+	acell = Cells[pos];
+	
+	left = Math.floor(acell.left + acell.width/2);
+	top = Math.floor(acell.top + acell.width/2);
+	
+	if (player == 'x')
+		color = "white";
+	else
+		color = "black";
+		
+	theContext.beginPath()
+	theContext.fillStyle = color;
+	theContext.arc(left,top,2,0,2*Math.PI);
+	theContext.closePath();
+	theContext.fill();
+}	
+	
+	
+// ----------------------------------------------- FadeDisks ---------------------------
+var Fading = false;
+var FadeTime = 1000;  // 1 second
+var FadeIterations = 20;
+var Fade_i;
+var FadeInterval;
+var FadeToWhite;
+var FadingDisks;
+var FadePostCall;
+
+function FadeDisks(disks,towhite) {
+	for (var i = 0; i < disks.length; ++i) {
+		if (towhite)
+			PaintDisk(disks[i],"black","white");
+		else
+			PaintDisk(disks[i],"white","black");
+	}
+	Fade_i = 0;
+	Fading = true;
+	FadeToWhite = towhite;
+	FadingDisks = disks;
+	FadeInterval = window.setInterval(FadeTheDisks,FadeTime/FadeIterations);
+}
+
+// --------------------------------------------- FadeTheDisks --------------------------------
+function FadeTheDisks() {
+	var gray, color_to_white, color_to_black, to_white, to_black;
+	Fade_i += 1;
+	if (Fade_i >= FadeIterations) {
+		for (var i = 0; i < FadingDisks.length; ++i) {
+			if (FadeToWhite)
+				PaintDisk(FadingDisks[i],"white","black");
+			else
+				PaintDisk(FadingDisks[i],"black","white");
+		}
+		Fading = false;
+		window.clearInterval(FadeInterval);
+		
+		// call the function to finish off the facing, and start new player
+		FadePostCall[0](FadePostCall[1],FadePostCall[2],FadePostCall[3]);
+	}
+	else {
+		to_white = Math.floor(Fade_i * 255 / FadeIterations);
+		to_black = 255 - to_white;
+		
+		color_to_white = "rgb("+to_white+","+to_white+","+to_white+")";
+		color_to_black = "rgb("+to_black+","+to_black+","+to_black+")";
+		for (var i = 0; i < FadingDisks.length; ++i) {
+			if (FadeToWhite)
+				PaintDisk(FadingDisks[i],color_to_white,color_to_black);
+			else
+				PaintDisk(FadingDisks[i],color_to_black,color_to_white);
+		}
+	}
+}
+
+// ========================================= end Disk Coloring ===================
+
+// ---------------------------------- strCount ---------------------------
+function strCount(s,c) {
+	// counts the number of times character c is in string s
+	var tot = 0;
+	for (var i = 0; i < s.length; ++i) {
+		if (s.charAt(i) == c) tot++;
+	}
+	return tot;
+}
+
+// ----------------------------- repeat -----------------------------------
+function repeat(string,times) {
+	var result = '';
+	for (var i = 0; i < times; ++i)
+		result += string;
+	return result;
+}
+
+// ----------------------------------------- strip -----------------------------
+function strip(s) {
+	// strips off leading and trailing whitespace
+	var start = 0;
+	var end = s.length - 1;
+	if (s.length == 0) return s;
+	for (start = 0; start < s.length; start++)
+		if ((s.charAt(start) != ' ') &&  (s.charAt(start) != '\t')) break;
+	if (start == s.length) return '';
+	for (end = s.length - 1; end > start; --end)
+		if ((s.charAt(end) != ' ') && (s.charAt(end) != '\t')) break;
+	if (start >= end) return '';
+	return s.slice(start,end+1);
+}
+
+// =========================================== Mousing ===============================
+		
+// ---------------------------------------------- MouseDown -----------------------------
+function MouseDown(event) {
+	var pos;
+	
+	if (Processing || Fading) return;
+	
+	pos = GetMouseCell(event);
+	if (pos < 0) return;
+	if (Board[pos] != Blank) {
+		alert('Illegal move');
+		return;
+	}
+	// check if allowed
+	DoMove(Player,pos);
+	
+	//Board = addMoveToBoardLetters(Board,pos,Player);
+
+	//if (Player == 'x')
+		//PaintDisk(pos,"black","white");
+	//else
+		//PaintDisk(pos,"white","black");
+		
+}
+
+// -------------------------------------- GetMouseCell --------------------------------
+function GetMouseCell(event) {
+	var xypos, acell, icell;
+	xypos = relMouseCoords(event);
+	//alert('xypos: '+xypos.x+','+xypos.y);
+	for (icell = 0; icell < 64; ++icell) {
+		acell = Cells[icell];
+		if (xypos.x >= acell.left && xypos.x < (acell.left+acell.width) && xypos.y >= acell.top && xypos.y <= (acell.top + acell.width))
+			return icell;
+	}
+	return -1;
+}
+	
+// --------------------------------------- relMouseCoords --------------------------------
+function relMouseCoords(event){
+    var totalOffsetX = 0;
+    var totalOffsetY = 0;
+    var canvasX = 0;
+    var canvasY = 0;
+    var currentElement = theCanvas;
+
+    do{
+        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+    }
+    while(currentElement = currentElement.offsetParent);
+//alert('xmouse: '+event.pageX+'  ymouse: '+event.pageY);
+    canvasX = event.pageX - totalOffsetX;
+    canvasY = event.pageY - totalOffsetY;
+    return {x:canvasX, y:canvasY}
+}
+
+// ================================================= end Mousing =================================
+
+// -------------------------------------- NewGame-----------------------------------------------
+function NewGame(which) {
+	Board = NewBoard;
+	Moves = [];
+	NextMove = 0;
+	
+	if (which == 'human') {
+		Human = 'x';
+		Computer = 'o';
+	}
+	else {
+		Human = 'o';
+		Computer = 'x';
+	}
+	Player = 'x';
+	
+	PrepareForNextMove();
+	//DisplayBoard(Board);
+	//ShadePossiblities(Board,'x');
+	
+
+}
+
+// ---------------------------------------- DisplayBoard -----------------------------------
+function DisplayBoard(b) {
+	var board_code;
+	
+	RepaintCanvas();
+	for (var i = 0; i < 64; ++i) {
+		if (b[i] == 'x')
+			PaintDisk(i,"black","white");
+		else if (b[i] == 'o')
+			PaintDisk(i,"white","black");
+	}
+	ShowScores();
+	PaintLatestMoveDot();
+	board_code = document.getElementById("board_code");
+	board_code.innerText = b;
+}
+	
+
+// -------------------------- addMoveToBoardLetters ---------------------
+function addMoveToBoardLetters(aboard,pos,letter) {
+	var new_board = aboard;
+	if (pos == 0)
+		new_board = letter + aboard.slice(1);
+	else if (pos == 80)
+		new_board = aboard.slice(0,80) + letter;
+	else
+		new_board = aboard.slice(0,pos) + letter + aboard.slice(pos+1);
+	//alert('end: '+new_board);
+	return new_board;
+}
+
+// ------------------------------------ ShowScores ------------------------
+function ShowScores() {
+	var black = strCount(Board,'x');
+	var white = strCount(Board,'o');
+	//alert('b: '+black+' w: '+white);
+	var blackscore = document.getElementById("blackscore");
+	var whitescore = document.getElementById("whitescore");
+	blackscore.innerText = black;
+	whitescore.innerText = white;
+}
+	
+// --------------------------------------- IsMovePossible ---------------------
+function IsMovePossible(aboard,player) {
+	poss_x = GetPossibleMoves(aboard,player);
+	if (poss_x.length > 0)
+		return true;
+	return false;
+}
+
+// ----------------------------------------- GetPossibleMoves -----------------
+function GetPossibleMoves(aboard,player) {
+	var poss_list = [];
+	var ray, isRun, opponent, c;
+	
+	opponent = Other(player,['x','o']);
+	
+	for (var pos = 0; pos < 64; ++pos) {
+		if (aboard[pos] == Blank) {
+			for (var idir = 0; idir < Directions.length; ++idir) {
+				ray = GetPlayedRay(aboard,pos,Directions[idir]);
+				if (ray.length == 0) continue;
+				if (aboard[ray[0]] != opponent) continue;
+				isRun = false;
+				for (var i = 1; i < ray.length; ++i) {
+					c = aboard[ray[i]];
+					if (c == Blank) break;
+					if (c == player) {
+						isRun = true;
+						break;
+					}
+				}
+				if (isRun) {
+					poss_list.push(pos);
+					break;
+				}
+			}
+		}
+	}
+	
+	return poss_list;
+}
+
+// ------------------------------------------- GetPlayedRay----------------------------------
+function GetPlayedRay(aboard,from_pos,adir) {
+	// returns a ray of occupied positions, from from_pos outward in direction adir.  Stops at edge or blank.
+	var row, col, drow, dcol, rc, pos, c;
+	var ray = [];
+		
+	rc = Pos2RowCol(from_pos);
+	drow = adir[0];
+	dcol = adir[1];
+	for (var i = 1; i < 8; ++i) {
+		row = rc.row + i*drow;
+		col = rc.col + i*dcol;
+		if (!ValidRowCol(row,col)) break;
+		pos = RowCol2Pos(row,col);
+		c = aboard[pos];
+		if (c == Blank) break;
+		ray.push(pos);
+	}
+	return ray;
+}
+	
+// ------------------------------------------------- ShadePossibles -------------------------
+function ShadePossiblities(aboard,player) {
+	var poss_list = GetPossibleMoves(aboard,player);
+	for (var i = 0; i < poss_list.length; ++i)
+		PaintCell(poss_list[i],cShade);
+}
+
+// ----------------------------------------- GetTurnovers ----------------------
+function GetTurnovers(aboard,pos) {
+	var player = aboard[pos];
+	var opponent = Other(player,['x','o']);
+	var ray, lastOpponent_i;
+	var turnovers = [];
+	
+	for (var idir = 0; idir < Directions.length; ++idir) {
+		ray = GetPlayedRay(aboard,pos,Directions[idir]);
+		//alert('dir: '+Directions[idir]+' ray: '+ray);
+		if (ray.length == 0) continue;
+		if (aboard[ray[0]] != opponent) continue;
+		lastOpponent_i = -1;
+		for (var i = 1; i < ray.length; ++i) {
+			c = aboard[ray[i]];
+			if (c == player) {
+				lastOpponent_i = i-1;
+				break;
+			}
+		}
+		if (lastOpponent_i== -1)
+			continue;
+		for (var i = 0; i <= lastOpponent_i; ++i)
+			turnovers.push(ray[i]);
+	}
+	
+	return turnovers;
+}
+
+				
+
+// ------------------------------------- Other ------------------------------
+function Other(val,duo) {
+	if (val == duo[0])
+		return duo[1];
+	return duo[0];
+}
+
+// ----------------------------------------- Pos2RowCol ----------------------
+function Pos2RowCol(pos) {
+	var row, col, rc;
+	row = Math.floor(pos/8);
+	col = pos - 8*row;
+	return {row:row,col:col};
+}
+
+// ----------------------------------- RowCol2Pos -----------------------------
+function RowCol2Pos(row,col) {
+	return row*8 + col;
+}
+
+// --------------------------------- ValidRowCol ----------------------------
+function ValidRowCol(row,col) {
+	if (row < 0 || row >= 8 || col < 0 || col >= 8)
+		return false;
+	return true;
+}
+
+// ============================================= Moving ===============================
+// ---------------------------------- WhoPlays -----------------------------
+function WhoPlays(who) {
+	if (who == 'human')
+		return Human;
+	return Computer;
+}
+
+//----------------------------------- DoMove --------------------------------
+function DoMove(play,pos) {
+	var poss_list = GetPossibleMoves(Board,play);
+	//alert('play: '+play);
+	//alert('poss_list: '+poss_list);
+	var turnovers = [];
+	var toswhite;
+	
+	if (poss_list.length == 0) {
+		// we should never get here!
+		alert('No possible moves for this player!');
+		return;
+	}
+	// check if valid
+	if (poss_list.indexOf(pos) == -1) {
+		//alert('Move: '+pos+' is not legal!');
+		return;
+	}
+	Board = addMoveToBoardLetters(Board,pos,play);
+	DisplayBoard(Board);
+	Moves[NextMove++] = [play,pos];
+	Moves = Moves.slice(0,NextMove);   // having made this move, remove any future moves
+	
+	// register and fade the turnovers
+	turnovers = GetTurnovers(Board,pos);
+	//alert('turnovers: '+turnovers);
+	towhite = true;
+	if (play == 'x') towhite = false;
+	
+	FadePostCall = [FadePostFunction,turnovers,play,pos];
+	FadeDisks(turnovers,towhite);
+}
+
+// ------------------------------------ FadePostFunction ---------------------------------
+function FadePostFunction(turnovers,play,pos) {
+
+	for (var i = 0; i < turnovers.length; ++i) 
+		Board = addMoveToBoardLetters(Board,turnovers[i],play);
+	DisplayBoard(Board);
+	ShowScores();
+	
+	// next move prep???
+	Player = Other(Player,['x','o']);
+	if (!IsMovePossible(Board,Player)) {
+		if (!IsMovePossible(Board,Other(Player,['x','o']))) {
+			alert('Game Over!');
+			return;
+		}
+		// no moves possible for this player, but possible for the other
+		Player = Other(Player,['x','o']);
+		if (Player == Human)
+			alert('No allowable moves for the computer.  Human plays again.');
+		else
+			alert('No allowable moves for the Human player.  Computer plays again.');
+	}
+	ShadePossiblities(Board,Player);
+	
+	PrepareForNextMove()
+}
+
+// --------------------------------- BackNext ------------------------
+function BackNext(which) {
+	var i_target = -1;
+	var target_found = false;
+	var turnovers = [];
+	var i, j, iHuman;
+	
+	if (Processing || Fading) return;
+	
+	// We should only be here if it's the Human's turn
+	if (which == 'back') {
+		if (NextMove > 0) {
+			// go back to just before the previous Human move
+			for (i = NextMove-1; i >= 0; --i) {
+				if (Moves[i][0] == Human) {
+					i_target = i-1;
+					target_found = true;
+					break;
+				}
+			}
+			Board = NewBoard;
+			for (i = 0; i <= i_target; ++i) {
+				amove = Moves[i];
+				play = amove[0];
+				pos = amove[1];
+				Board = addMoveToBoardLetters(Board,pos,play);
+				turnovers = GetTurnovers(Board,pos);
+				for (j = 0; j < turnovers.length; ++j)
+					Board = addMoveToBoardLetters(Board,turnovers[j],play);
+			}
+			NextMove = i_target + 1;
+			DisplayBoard(Board);
+			ShowScores();
+			PrepareForNextMove();
+		}
+	}
+	else {
+		// go until the next Human move
+		// alert('Human: '+Human+' NextMove: '+NextMove+' Moves: '+Moves);
+		if (NextMove < Moves.length) {
+			i_target = Moves.length;
+			for (iHuman = NextMove+1; iHuman < Moves.length; ++iHuman ) {
+				if (Moves[iHuman][0] == Human) {
+					i_target = iHuman;
+					break;
+				}
+			}
+			for (i = NextMove; i < i_target; ++i) {
+				amove = Moves[i];
+				play = amove[0];
+				pos = amove[1];
+				Board = addMoveToBoardLetters(Board,pos,play);
+				turnovers = GetTurnovers(Board,pos);
+				for (j = 0; j < turnovers.length; ++j)
+					Board = addMoveToBoardLetters(Board,turnovers[j],play);
+			}
+			NextMove = i_target;
+			DisplayBoard(Board);
+			ShowScores();
+			PrepareForNextMove();
+		}
+	}
+}
+
+// --------------------------------------- PrepareForNextMove ------------------------------------
+function PrepareForNextMove() {
+	var poss_list;
+	
+	if (NextMove == 0)
+		Player = 'x';
+	else
+		Player = Other(Moves[NextMove-1][0],['x','o']);
+	
+	poss_list = GetPossibleMoves(Board,Player);
+	DisplayBoard(Board);
+	ShowScores();
+	ShadePossiblities(Board,Player);
+	if (strCount(Board,Blank) == 0) {
+		alert("Game Over!");
+		return;
+	}
+	if (poss_list.length == 0) {
+		poss_list = GetPossibleMoves(Board,Other(Player,['x','o']));
+		if (poss_list.length == 0) {
+			alert('No more legal moves. Game Over!');
+			return;
+		}
+		if (Player == Human) {
+			alert('No legal moves for Human.  Computer plays next...');
+			Player = Computer;
+			DisplayBoard(Board);
+			ShadePossiblities(Board,Player);
+		}
+		else {
+			alert('No legal moves for Computer.  Human plays next...');
+			Player = Human;
+			DisplayBoard(Board);
+			ShadePossiblities(Board,Player);
+		}
+	}
+	//alert('Player: '+Player+' Human: '+Human);
+	if (Player == Computer)
+		AskForComputerMove();
+}
+
+// ====================================== ComputerCommunication =================================
+// ------------------------------------- checkURL --------------------------
+function checkURL() {
+	var url = document.getElementById("url").value;
+	var progfile = document.getElementById("progfile").value;
+	url = strip(url);
+	progfile = strip(progfile);
+	
+	if ((url.length == 0) || (url.slice(0,7) != "http://")) {
+		alert('ERROR: TimeDriver URL should begin with "http://"');
+		return false;
+	}
+	if (progfile.length == 0) {
+		alert('ERROR: Program filename is missing');
+		return false;
+	}
+	if (progfile.slice(-3) != '.py') {
+		alert('ERROR: Program filename should end in ".py"');
+		return false;
+	}
+	if (((url.slice(-1) == '/') && (url.slice(-4) != ".py/")) || ((url.slice(-1) != '/') && (url.slice(-3) != ".py"))) {
+		alert('ERROR: URL should end with ".py" or ".py/"');
+		return false;
+	}
+	
+	return true;
+}
+
+// ------------------------------------------ checkProgram --------------------------------------
+function checkProgram() {
+	waiting_for = 'id';
+	formatRequestAndSend('cputime=1&action=id&board='+Board);
+}
+
+// ---------------------------------------- AskForComputerMove ----------------------------------------
+function AskForComputerMove() {
+	var sel, cputime, command_args, send_args, more_args, pairs, parts, i, diff, ply;
+	
+	//alert('asking..');
+	waiting_for = 'move';
+	sel = document.getElementById('cputime');
+	cputime = sel.options[sel.selectedIndex].text;
+	diff = document.getElementById('ply');
+	ply = diff.options[diff.selectedIndex].value;
+	command_args = strip(document.getElementById('args').innerHTML);
+	
+	more_args='';
+	if (command_args.length > 0) {
+		pairs = command_args.split(' ');
+		for (i = 0; i < pairs.length; ++i) {
+			parts = pairs[i].split('=');
+			if (parts.length == 2)
+				more_args += '&'+pairs[i];
+		}
+	}
+	send_args='action=move&cputime='+cputime+'&board='+Board+'&ply='+ply+'&play='+Player+more_args;
+	//alert('ask send_args: '+send_args);
+	
+	formatRequestAndSend(send_args);
+}
+
+// -------------------------------------------formatRequestAndSend -----------------------------
+function formatRequestAndSend(additionalArgs) {
+	if (!checkURL()) return;
+	var url = strip(document.getElementById("url").value);
+	var progfile = strip(document.getElementById("progfile").value);
+	var full = url;
+	full += '?progfile='+progfile+'&result_prefix='+result_prefix;
+	if (additionalArgs != '') full += '&'+additionalArgs;
+	document.getElementById("processing").innerHTML = "Processing";
+	isProcessing = true;
+	startRequest(full);
+}
+
+// ----------------------------------- processIncoming -------------------------------------
+function processIncoming(incoming) {
+	document.getElementById("processing").innerHTML = '';
+	isProcessing = false;
+	lines = incoming.split('\n');
+	document.getElementById("message").innerHTML = lines.join('<br/>');
+
+	if (waiting_for == 'id') {
+		var title = findInLines('title=',lines);
+		var author = findInLines('author=',lines);
+		document.getElementById('title').innerHTML = title;
+		document.getElementById('author').innerHTML = author;
+	}
+	else if (waiting_for == 'move') {
+		var smove = findInLines('move=',lines);
+		if (smove.length == 0) {
+			alert('Computer player did not return a move.');
+			return;
+		}
+		
+		var where = parseInt(smove);
+		if (where >= 0 && where < Board.length) {
+			if (Board[where] != Blank)
+				alert('Computer player returned a move already played: '+smove);
+			else
+				DoMove(Computer,where);
+		}
+		else
+			alert('Computer player returned an illegal move: '+smove);
+	}
+}
+
+// ----------------------------------- findInLines -----------------------------------
+function findInLines(what,slines) {
+	for (var i = 0; i < slines.length; ++i)
+		if (slines[i].slice(0,what.length) == what)
+			return slines[i].slice(what.length);
+	return '';
+}
+
+
+</script>
+<script language=javascript>
+// ===================================== AJAX ==============================================
+var xmlHttp;
+var isIE;
+
+function createXMLHttpRequest()
+{   if (window.ActiveXObject)
+    {   xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        isIE = true;
+    }
+    else if (window.XMLHttpRequest)
+    {   xmlHttp = new XMLHttpRequest();
+        isIE = false;
+    }
+    else
+	alert('Cannot save comments because xmlHttp will not instantiate.');
+}
+
+function startRequest(url)
+{   //alert('url: '+url)
+	createXMLHttpRequest();
+    xmlHttp.onreadystatechange = handleStateChange;
+    xmlHttp.open("GET",url, true);
+    xmlHttp.send(null);
+}
+
+function handleStateChange()
+{   if (xmlHttp.readyState == 4)
+    {	if (xmlHttp.status == 200)
+        {
+            incoming=xmlHttp.responseText;
+            //alert('incoming: '+incoming);
+            processIncoming(incoming);
+ 		}
+    }
+}
+// =============================================== end AJAX =================================
+function GoToURLNewTab(url) {
+	window.open(url,'_blank');
+}
+
+
+</script>
+
+<script>
+function Switch() {
+	Player = Other(Player,['x','o']);
+	Human = Other(Human,['x','o']);
+	Computer = Other(Computer,['x','o']);
+}
+
+</script>
+</head>
+
+<body onload="InitCanvas();" class="auto-style3">
+<!--<input type="button" name="fred" id="fred" value="Setup touch"onclick="setup_touch();"/> -->
+
+<h3 class="auto-style1">Othello<br />
+<span class="auto-style2">Stuyvesant High School, July 2018&nbsp;&nbsp; </span>
+<span class="auto-style11"><a href="" onclick="GoToURLNewTab('instructions.html');">(instructions)</a></span></h3>
+<form action="" method="get">
+<center><table><tr><td>
+<table align="center"  border="1">
+	<tr>
+		<td>
+		<canvas width="400" height="400" id="MainCanvas"
+		onmousedown="MouseDown(event);">
+		</canvas>
+		
+		</td>
+	</tr>
+</table>
+</td></tr>
+<tr><td class="auto-style10"><center>black&nbsp;<strong>
+	<label id="blackscore" style="color:red;">0</label>&nbsp;&nbsp; 
+	<label id="whitescore" style="color:red;">0</label></strong>&nbsp;white</center></td></tr>
+
+<tr><td><center>
+	<input name="Button1" type="button" value="New game: Human moves first (black)" onClick="NewGame('human');"/>&nbsp;&nbsp;&nbsp;&nbsp;
+	<input name="Button2" type="button" value="New game: Computer moves first (black)" onClick="NewGame('computer');"/><br />
+	<br />
+	<span class="auto-style4">Recall:
+	<input name="Button3" type="button" value="&lt;- Back" onClick="BackNext('back');"/>&nbsp;&nbsp;
+	<input name="Button4" type="button" value="Next -&gt;" onClick="BackNext('next');"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	Difficulty: <select name="ply" id="ply">
+	<option selected="selected" value="0">Easy (ply=0)</option>
+	<option value="1">Easy-medium (ply=1)</option>
+	<option value="2">Medium (ply=2)</option>
+	<option value="3">Medium-hard (ply=3)</option>
+	<option value="4">Hard (ply=4)</option>
+	<option value="5">Harder (ply=5)</option>
+	<option value="6">Even harder (ply=6)</option>
+	<option value="7">You can still beat it (ply=7)</option>
+	</select></span>
+				<span class="auto-style7">&nbsp;&nbsp;&nbsp; Max-CPU time:
+			<select name="cputime" id="cputime">
+			<option value=".5">.5</option>
+			<option selected="selected" value="1">1</option>
+			<option value="1.5">1.5</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="20">20</option>
+			<option value="30">30</option>
+			</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+	
+	
+	</center>
+		<br />
+		<center><label id="processing" style="color: red;"></label></center>
+		</td>
+	</tr>
+
+	<tr>
+		<td>
+<center>
+		<table class="auto-style8" border="1" >
+			<tr>
+				<td class="auto-style9" halign="left" colspan="2" style="border-color:navy; border-width:1px; border-style:solid" >
+				<input name="Button1" type="button" value="Check program" onclick="checkProgram();"/>
+				&nbsp;       Title:&nbsp;<label id="title" style="color:blue"></label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+				Author:&nbsp;<label id="author" style="color:blue"></label>
+				</td>
+			</tr>
+
+			<tr>
+				<td class="auto-style9" valign="top" >
+				<label class="computer-style">Connect-4 Program:</label>
+				
+					<input name="Text2" type="text" value="<!--<progfile>-->" size="60" id="progfile"/>
+				<br /><br />
+
+				<label class="computer-style">GameDriver URL:</label>				
+					<input name="Text1" type="text" value="<!--<gamedriver>-->" size="70" id="url"/>
+				<br/><br/>
+		 additional args 
+		<span class="auto-style8">(format: arg1=value1 arg2=value2 ...)</span><span class="auto-style7">:
+			<input name="args" id="args" size="40" type="text" /></span>
+			</td>
+			</tr>
+		
+			<tr>
+				<td class="auto-style9" valign="top" colspan="2" >
+				Last message: <br/>
+				
+				<table width="100%" style="border-color:navy; border-width:1px; border-style:solid"><tr><td>
+				<label id="message" style="font-size:small">&nbsp;</label>
+				</td></tr>
+				</table>
+				</td>
+			</tr>
+		</table>
+		</center></td></tr>
+		
+		<tr><td class="auto-style3">
+		<center><table><tr><td class="auto-style8">board code:&nbsp;&nbsp;<label id="board_code"></label>&nbsp;&nbsp;</td></tr></table></center>
+	
+	</td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+</table></center>
+</form>
+
+</body>
+
+</html>

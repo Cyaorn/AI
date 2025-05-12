@@ -1,0 +1,134 @@
+Human Need Not Apply (AI overtaking humans is going to be bad):
+
+- Physical Labor
+	- Baxter
+		- customizable to perform a variety of jobs
+		- slower, BUT much cheaper than human workers
+		- cheap, all-purpose technology tends to sell VERY well
+	- robots have already been shown to replace humans
+		- cashier robots
+		- coffee robots
+			- able to take specific orders and specialize based on the customer's preferences
+- Horses
+	- ideally as technology advances, horses would find some other purpose to fulfill
+		- instead horses are almost completely replaced by cars
+			- the same idea applies to humans 
+- Automobiles
+	- Self-driving cars/"Autos"
+		- already exist and are capable of driving
+		- less imperfect than humans 
+			- don't text and drive
+			- don't get tired
+			- can pay attention almost indefinitely
+			- can work in more stressful conditions
+				- mines 
+		- cheaper than humans
+			- truck drivers need to rest during long trips
+				- wastes time -> wastes money
+			- human accidents cost money
+			- insurance companies will almost never need to pay for an auto that, ideally, never crashes
+- Future Prospects
+	- White collar jobs
+		- high demand to replace numerous, more expensive humans
+		- software bots are much faster than humans
+		- software is capable of learning by itself
+			- capable of more complex jobs without having to code a specific algorithm
+			- trading bots
+				- taught themselves to trade
+			- some newspaper articles are written by bots
+	- Professional work	
+		- Legal work	
+			- "Discovery" -> detecting inconsistencies in mounds of paperwork
+				- possible to do much more accurately and than humans
+					- bots are good at pattern recognition
+					- bots don't get tired or make silly mistakes
+		- Medicine
+			- Watson 
+				- able to diagnose based on received input
+					- humans are surprisingly inaccurate when it comes to diagnoses
+						- about 400,0000 deaths by preventable harm per year
+				- able to provide guidance on certain treatments
+					- ex: treatments on lung cancer
+				- able to memorize the effects of every single drug
+				- software is much more accessible than a physical human doctor
+			- Research bots
+				- able to test many different drugs very quickly
+					- more efficient than humans
+	- Creative work
+		- already limited in scope
+			- unreliable to sustain an economy alone
+		- humans are not innately creative -> creativity can be replicated
+		- Music
+			- Emily Howell
+				- able to compose music that sounds man-made
+		- Chess 
+			- Deep Blue vs. Kasparov
+				- Human lost to a machine in a complex game
+- Top 32 more common jobs by the US Census is capable of being replaced by AI
+	- over 45% unemployment rate if it happens
+		- worse than the Great Depression
+		- very bad for economy
+
+		
+The Return of the Machinery Question:
+	
+- Enlitic's system
+	- Radiology
+		- Tumors
+			- 50% at identifying malignant tumors than humans
+			- 0% false negative rate
+				- never misdiagnoses a tumor as not there
+		- Wrist fractures
+			- outperformed humans in identifying wrist fractures 
+				- exact statistics unknown
+	- shows automation of specialized jobs
+- robots only able to overtake routine labor, whether physical or cognitive
+	- employment rates in non-routine jobs have been steadily increasing since the 1980's
+	- unable to fully replace a radiologist who specializes in many different things
+- about 47% of American workers at risk of being replaced by robots
+	- mostly in specific areas
+		- transport
+		- logistics
+		- office work
+			- receptionists
+			- security
+		- sales
+			- cashiers
+			- telemarketers
+			- clerks 
+	- machine learning allows for all routine jobs to be replaced by the same piece of software
+		- not just a single job that people can relocate from
+- History shows that technological advances always create more jobs than it destroys
+	- increase in demand for tasks not accounted for by what is automated
+		- weaving in the Industrial Revolution
+			- the process of weaving became automated
+				- humans then focused on tending to the machines or operating them
+			- merely a shift in the required skill set as opposed to a replacement of the job completely
+		- ATMs
+			- shifted the jobs of bank tellers from more routine tasks to sales and customer service
+	- automation redefines jobs instead of replacing them
+	- Legal work
+		- automation of Discovery led to a 1.1% increase in demand of legal clerks from 2000-2013
+	- e-commerce
+		- more accurate recommendations led to an increase in sales
+	- technology increases capacity 
+		- more space for higher specialization	
+	- new jobs are certain to arise with the shift in the standard of technology
+		- horses -> cars
+			- created jobs in motels and fast-food to serve drivers and motorists
+		- newer bots will need people to maintain/train them constantly
+- some jobs are impossible for robots to do more efficiently than humans
+	- jobs involving empathy or social interaction are better left to humans
+		- doctors
+		- therapists
+		- personal trainers
+		- hairdressers
+	- drastic increase in "caring" jobs over the last two decades
+		- 909% increase in nursing assistants
+		- 580% increase in teaching assistants
+		- 168% increase in careworkers
+- increased automation in jobs increases the value of human-only jobs
+- labor is being replaced more by outsourcing cheap labor to developing countries than AI
+- no solid evidence that AI has a severe impact on employment
+- there is a lot of time between the inception of technology and the implementation of it			
+			
